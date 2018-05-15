@@ -1,0 +1,7 @@
+.contract {
+  @extend %paper;
+
+  &__container {
+    padding: explorer-size(-1) explorer-size(0);
+  }
+}
