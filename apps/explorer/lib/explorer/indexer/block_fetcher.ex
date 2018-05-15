@@ -265,12 +265,21 @@ defmodule Explorer.Indexer.BlockFetcher do
          %{logs: logs, receipts: receipts} = receipt_params,
          {:internal_transactions, {:ok, internal_transactions}} <-
            {:internal_transactions, fetch_internal_transactions(state, transaction_hashes)} do
+      addresses =
+        Indexer.BlockFetcher.Address.fetch_addresses(%{
+          blocks: blocks,
+          internal_transactions: internal_transactions,
+          logs: logs,
+          transactions: transactions
+        })
+
       insert(state, seq, range, %{
+        addresses: addresses,
         blocks: blocks,
         internal_transactions: internal_transactions,
         logs: logs,
-        receipts: receipts,
-        transactions: transactions
+        transactions: transactions,
+        receipts: receipts
       })
     else
       {step, {:error, reason}} ->
