@@ -97,6 +97,7 @@ defmodule Explorer.Chain.Transaction do
   @type t :: %__MODULE__{
           block: %Ecto.Association.NotLoaded{} | Block.t() | nil,
           block_hash: Hash.t() | nil,
+          internal_transactions_indexed_at: Timex.Ecto.DateTime.t(),
           from_address: %Ecto.Association.NotLoaded{} | Address.t(),
           from_address_hash: Hash.Truncated.t(),
           gas: Gas.t(),
@@ -130,6 +131,7 @@ defmodule Explorer.Chain.Transaction do
     field(:standard_v, :string)
     field(:v, :string)
     field(:value, Wei)
+    field(:internal_transactions_indexed_at, Timex.Ecto.DateTime)
 
     timestamps()
 

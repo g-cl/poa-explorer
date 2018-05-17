@@ -10,7 +10,11 @@ defmodule Explorer.Indexer.BlockFetcher do
   alias EthereumJSONRPC
   alias EthereumJSONRPC.Transactions
   alias Explorer.{Chain, Indexer}
-  alias Explorer.Indexer.{AddressFetcher, Sequence}
+  alias Explorer.Indexer.{
+    AddressFetcher,
+    Sequence,
+    InternalTransactionFetcher,
+  }
 
   # dialyzer thinks that Logger.debug functions always have no_local_return
   @dialyzer {:nowarn_function, import_range: 3}
@@ -20,7 +24,7 @@ defmodule Explorer.Indexer.BlockFetcher do
 
   @debug_logs false
 
-  @blocks_batch_size 10
+  @blocks_batch_size 100
   @blocks_concurrency 10
 
   @internal_transactions_batch_size 50
@@ -202,9 +206,9 @@ defmodule Explorer.Indexer.BlockFetcher do
   end
 
   defp insert(%{} = state, seq, range, params) do
-    with {:ok, %{addresses: address_hashes}} = ok <- Chain.import_blocks(params) do
-      :ok = AddressFetcher.async_fetch_balances(address_hashes)
-      ok
+    with {:ok, results} <- Chain.import_blocks(params) do
+      post_block_insert_triggers(results)
+      {:ok, results}
     else
       {:error, step, reason} = error ->
         debug(state, fn ->
@@ -215,6 +219,11 @@ defmodule Explorer.Indexer.BlockFetcher do
 
         error
     end
+  end
+
+  defp post_block_insert_triggers(%{transactions: transactions, addresses: address_hashes}) do
+    AddressFetcher.async_fetch_balances(address_hashes)
+    # InternalTransactionFetcher.async_fetch(transactions)
   end
 
   defp missing_block_numbers(%{blocks_batch_size: blocks_batch_size}) do
