@@ -10,7 +10,8 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
       internal_transaction = %{
         from_address_hash: gen_hash(),
         to_address_hash: gen_hash(),
-        created_contract_address_hash: gen_hash()
+        created_contract_address_hash: gen_hash(),
+        created_contract_code: "code"
       }
 
       transaction = %{
@@ -31,10 +32,13 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
                %{hash: block.miner_hash},
                %{hash: internal_transaction.from_address_hash},
                %{hash: internal_transaction.to_address_hash},
-               %{hash: internal_transaction.created_contract_address_hash},
-               %{hash: log.address_hash},
+               %{
+                 hash: internal_transaction.created_contract_address_hash,
+                 contract_code: internal_transaction.created_contract_code
+               },
                %{hash: transaction.from_address_hash},
-               %{hash: transaction.to_address_hash}
+               %{hash: transaction.to_address_hash},
+               %{hash: log.address_hash}
              ]
     end
 
@@ -51,21 +55,23 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
       assert Enum.empty?(addresses)
     end
 
-    test "returns Address hashes without duplication" do
-      duplicated_hash = "0xe8ddc5c7a2d2f0d7a9798459c0104fdf5e987aca"
-      different_hash = "0x8bf38d4764929064f2d4d3a56520a76ab3df415b"
+    test "addresses get merged when they're duplicated by their hash" do
+      hash = "0xe8ddc5c7a2d2f0d7a9798459c0104fdf5e987aca"
 
       blockchain_data = %{
-        blocks: [%{miner_hash: duplicated_hash}],
-        transactions: [%{from_address_hash: duplicated_hash}],
-        logs: [%{address_hash: different_hash}]
+        blocks: [%{miner_hash: hash}],
+        transactions: [%{from_address_hash: hash}],
+        internal_transactions: [
+          %{
+            created_contract_address_hash: hash,
+            created_contract_code: "code"
+          }
+        ]
       }
 
-      assert Address.fetch_addresses(blockchain_data) ==
-               [
-                 %{hash: duplicated_hash},
-                 %{hash: different_hash}
-               ]
+      assert Address.fetch_addresses(blockchain_data) == [
+               %{hash: hash, contract_code: "code"}
+             ]
     end
 
     test "only entities data defined in @entity_to_address_map are collected" do
@@ -88,7 +94,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
 
   describe "fetch_addresses_from_collection/2" do
     test "returns all matched addresses" do
-      fields = [
+      fields_map = [
         %{from: :field_1, to: :hash},
         %{from: :field_2, to: :hash}
       ]
@@ -98,7 +104,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
         %{field_1: "hash1", field_2: "hash3"}
       ]
 
-      assert Address.fetch_addresses_from_collection(items, fields) == [
+      assert Address.fetch_addresses_from_collection(items, fields_map) == [
                %{hash: "hash1"},
                %{hash: "hash2"},
                %{hash: "hash1"},
@@ -120,7 +126,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
       assert response == [%{hash: "hash1"}]
     end
 
-    test "different attributes of the same item becomes different addresses" do
+    test "attributes of the same item defined separately in the fields map fetches different addresses" do
       fields_map = [
         %{from: :field_1, to: :hash},
         %{from: :field_2, to: :hash}
@@ -131,6 +137,29 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
       response = Address.fetch_addresses_from_item(item, fields_map)
 
       assert response == [%{hash: "hash1"}, %{hash: "hash2"}]
+    end
+
+    test "a list of attributes in the fields map references the same address" do
+      fields_map = [
+        %{from: :field_1, to: :hash},
+        [
+          %{from: :field_2, to: :hash},
+          %{from: :field_2_code, to: :code}
+        ]
+      ]
+
+      data = %{field_1: "hash1", field_2: "hash2", field_2_code: "code"}
+
+      response =
+        Address.fetch_addresses_from_item(
+          data,
+          fields_map
+        )
+
+      assert response == [
+               %{hash: "hash1"},
+               %{code: "code", hash: "hash2"}
+             ]
     end
   end
 

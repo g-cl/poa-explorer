@@ -5,10 +5,9 @@ defmodule Explorer.Chain.Address do
 
   use Explorer.Schema
 
-  alias Explorer.Chain.{Credit, Debit, Hash, Wei}
+  alias Explorer.Chain.{Credit, Data, Debit, Hash, Wei}
 
-  @optional_attrs ~w()a
-  @required_attrs ~w(hash)a
+  @permitted_attrs ~w(hash contract_code)a
 
   @typedoc """
   Hash of the public key for this address.
@@ -30,6 +29,7 @@ defmodule Explorer.Chain.Address do
           credit: %Ecto.Association.NotLoaded{} | Credit.t() | nil,
           debit: %Ecto.Association.NotLoaded{} | Debit.t() | nil,
           hash: Hash.Truncated.t(),
+          contract_code: Data.t() | nil,
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -38,6 +38,7 @@ defmodule Explorer.Chain.Address do
   schema "addresses" do
     field(:fetched_balance, Wei)
     field(:balance_fetched_at, Timex.Ecto.DateTime)
+    field(:contract_code, Data)
 
     timestamps()
 
@@ -54,8 +55,8 @@ defmodule Explorer.Chain.Address do
 
   def changeset(%__MODULE__{} = address, attrs) do
     address
-    |> cast(attrs, @required_attrs, @optional_attrs)
-    |> validate_required(@required_attrs)
+    |> cast(attrs, @permitted_attrs)
+    |> validate_required([:hash])
     |> unique_constraint(:hash)
   end
 
