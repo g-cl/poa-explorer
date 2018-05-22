@@ -1,0 +1,37 @@
+<section class="container__section block">
+  <%= render ExplorerWeb.AddressView, "overview.html", assigns %>
+  <div>
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <%= link(
+              gettext("Transactions"),
+              class: "nav-link",
+              to: address_transaction_path(@conn, :index, @conn.assigns.locale, @conn.params["address_id"])
+            ) %>
+      </li>
+      <li class="nav-item">
+        <%= link(
+              gettext("Internal Transactions"),
+              class: "nav-link",
+              "data-test": "internal_transactions_tab_link",
+              to: address_internal_transaction_path(@conn, :index, @conn.assigns.locale, @conn.params["address_id"])
+            ) %>
+      </li>
+      <li class="nav-item">
+        <%= link(
+              gettext("Contract"),
+              class: "nav-link active",
+              to: address_contract_path(@conn, :index, @conn.assigns.locale, @conn.params["address_id"])
+            ) %>
+      </li>
+    </ul>
+  </div>
+
+  <div class="panels container__subsection">
+    <div class="panels__container">
+      <div class="contract__code u-padding-xsmall">
+        <p><%= @address.contract_code %></p>
+      </div>
+    </div>
+  </div>
+</section>
