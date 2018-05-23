@@ -10,7 +10,7 @@ defmodule Explorer.Indexer.BlockFetcher do
   alias EthereumJSONRPC
   alias EthereumJSONRPC.Transactions
   alias Explorer.{Chain, Indexer}
-  alias Explorer.Indexer.{AddressFetcher, Sequence}
+  alias Explorer.Indexer.{AddressBalanceFetcher, Sequence}
 
   # dialyzer thinks that Logger.debug functions always have no_local_return
   @dialyzer {:nowarn_function, import_range: 3}
@@ -203,7 +203,7 @@ defmodule Explorer.Indexer.BlockFetcher do
 
   defp insert(%{} = state, seq, range, params) do
     with {:ok, %{addresses: address_hashes}} = ok <- Chain.import_blocks(params) do
-      :ok = AddressFetcher.async_fetch_balances(address_hashes)
+      :ok = AddressBalanceFetcher.async_fetch_balances(address_hashes)
       ok
     else
       {:error, step, reason} = error ->
