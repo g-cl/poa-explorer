@@ -135,7 +135,6 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
   end
 
   defp gen_hash() do
-    Explorer.Factory.address_hash()
-    |> Explorer.Chain.Hash.to_string()
+    Explorer.Chain.Hash.to_string(Explorer.Factory.address_hash())
   end
 end
