@@ -1,6 +1,6 @@
 defmodule Explorer.Indexer.BlockFetcher.Address do
   @moduledoc """
-  Fetch Addresses from data fetched from the Blockchain and structured as Blocks, InternalTransactions,
+  Extract Addresses from data fetched from the Blockchain and structured as Blocks, InternalTransactions,
   Transactions and Logs.
 
   Address hashes are present in the Blockchain as a reference of a person that made/received an
@@ -42,21 +42,21 @@ defmodule Explorer.Indexer.BlockFetcher.Address do
     logs: [%{from: :address_hash, to: :hash}]
   }
 
-  def fetch_addresses(fetched_data) do
+  def extract_addresses(fetched_data) do
     addresses =
       for {entity_key, entity_fields} <- @entity_to_address_map,
           (entity_items = Map.get(fetched_data, entity_key)) != nil,
-          do: fetch_addresses_from_collection(entity_items, entity_fields)
+          do: extract_addresses_from_collection(entity_items, entity_fields)
 
     addresses
     |> List.flatten()
     |> Enum.uniq()
   end
 
-  def fetch_addresses_from_collection(items, fields),
-    do: Enum.flat_map(items, &fetch_addresses_from_item(&1, fields))
+  def extract_addresses_from_collection(items, fields),
+    do: Enum.flat_map(items, &extract_addresses_from_item(&1, fields))
 
-  def fetch_addresses_from_item(item, fields), do: Enum.map(fields, &extract_address(&1, item))
+  def extract_addresses_from_item(item, fields), do: Enum.map(fields, &extract_address(&1, item))
 
   defp extract_address(%{from: from_attribute, to: to_attribute}, item) do
     if value = Map.get(item, from_attribute) do

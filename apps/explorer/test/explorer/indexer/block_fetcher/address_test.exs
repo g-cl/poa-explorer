@@ -3,7 +3,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
 
   alias Explorer.Indexer.BlockFetcher.Address
 
-  describe "fetch_addresses/1" do
+  describe "extract_addresses/1" do
     test "returns all hashes entities data in a list" do
       block = %{miner_hash: gen_hash()}
 
@@ -27,7 +27,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
         logs: [log]
       }
 
-      assert Address.fetch_addresses(blockchain_data) == [
+      assert Address.extract_addresses(blockchain_data) == [
                %{hash: block.miner_hash},
                %{hash: internal_transaction.from_address_hash},
                %{hash: internal_transaction.to_address_hash},
@@ -46,7 +46,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
         logs: []
       }
 
-      addresses = Address.fetch_addresses(empty_blockchain_data)
+      addresses = Address.extract_addresses(empty_blockchain_data)
 
       assert Enum.empty?(addresses)
     end
@@ -61,7 +61,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
         logs: [%{address_hash: different_hash}]
       }
 
-      assert Address.fetch_addresses(blockchain_data) ==
+      assert Address.extract_addresses(blockchain_data) ==
                [
                  %{hash: duplicated_hash},
                  %{hash: different_hash}
@@ -74,19 +74,19 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
         unkown_entity: [%{hash: "0x8bf38d4764929064f2d4d3a56520a76ab3df415b"}]
       }
 
-      assert Address.fetch_addresses(blockchain_data) == [
+      assert Address.extract_addresses(blockchain_data) == [
                %{hash: "0xe8ddc5c7a2d2f0d7a9798459c0104fdf5e987aca"}
              ]
     end
 
     test "returns an empty list when there isn't a recognized entity" do
-      addresses = Address.fetch_addresses(%{})
+      addresses = Address.extract_addresses(%{})
 
       assert Enum.empty?(addresses)
     end
   end
 
-  describe "fetch_addresses_from_collection/2" do
+  describe "extract_addresses_from_collection/2" do
     test "returns all matched addresses" do
       fields = [
         %{from: :field_1, to: :hash},
@@ -98,7 +98,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
         %{field_1: "hash1", field_2: "hash3"}
       ]
 
-      assert Address.fetch_addresses_from_collection(items, fields) == [
+      assert Address.extract_addresses_from_collection(items, fields) == [
                %{hash: "hash1"},
                %{hash: "hash2"},
                %{hash: "hash1"},
@@ -107,7 +107,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
     end
   end
 
-  describe "fetch_addresses_from_item/2" do
+  describe "extract_addresses_from_item/2" do
     test "only fields specified in the fields map are fetched" do
       fields_map = [
         %{from: :field_1, to: :hash}
@@ -115,7 +115,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
 
       item = %{field_1: "hash1", field_2: "hash2"}
 
-      response = Address.fetch_addresses_from_item(item, fields_map)
+      response = Address.extract_addresses_from_item(item, fields_map)
 
       assert response == [%{hash: "hash1"}]
     end
@@ -128,7 +128,7 @@ defmodule Explorer.Indexer.BlockFetcher.AddressTest do
 
       item = %{field_1: "hash1", field_2: "hash2"}
 
-      response = Address.fetch_addresses_from_item(item, fields_map)
+      response = Address.extract_addresses_from_item(item, fields_map)
 
       assert response == [%{hash: "hash1"}, %{hash: "hash2"}]
     end

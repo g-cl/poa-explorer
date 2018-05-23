@@ -266,7 +266,7 @@ defmodule Explorer.Indexer.BlockFetcher do
          {:internal_transactions, {:ok, internal_transactions}} <-
            {:internal_transactions, fetch_internal_transactions(state, transaction_hashes)} do
       addresses =
-        Indexer.BlockFetcher.Address.fetch_addresses(%{
+        Indexer.BlockFetcher.Address.extract_addresses(%{
           blocks: blocks,
           internal_transactions: internal_transactions,
           logs: logs,
