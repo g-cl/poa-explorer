@@ -1540,12 +1540,12 @@ defmodule Explorer.Chain do
 
   defp insert_ecto_schema_module_to_changes_list(
          %{
+           Address => addresses_changes,
            Block => blocks_changes,
            Log => logs_changes,
            InternalTransaction => internal_transactions_changes,
            Receipt => receipts_changes,
-           Transaction => transactions_changes,
-           Address => addresses_changes
+           Transaction => transactions_changes
          },
          options
        ) do
