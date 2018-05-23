@@ -4,7 +4,7 @@ defmodule Explorer.ChainTest do
   import Explorer.Factory
 
   alias Explorer.{Chain, Repo}
-  alias Explorer.Chain.{Address, Block, InternalTransaction, Log, Receipt, Transaction, Wei}
+  alias Explorer.Chain.{Address, Block, InternalTransaction, Log, Receipt, Transaction, Wei, SmartContract}
 
   doctest Explorer.Chain
 
@@ -832,6 +832,74 @@ defmodule Explorer.ChainTest do
     test "with Transaction.t with :ether" do
       assert Chain.value(%Transaction{value: %Wei{value: Decimal.new(1)}}, :ether) == Decimal.new("1e-18")
       assert Chain.value(%Transaction{value: %Wei{value: Decimal.new("1e18")}}, :ether) == Decimal.new(1)
+    end
+  end
+
+  describe "smart_contract_bytecode/1" do
+    test "fetches the smart contract bytecode" do
+      smart_contract_bytecode =
+        "0x608060405234801561001057600080fd5b5060df8061001f6000396000f3006080604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604e5780636d4ce63c146078575b600080fd5b348015605957600080fd5b5060766004803603810190808035906020019092919050505060a0565b005b348015608357600080fd5b50608a60aa565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a7230582040d82a7379b1ee1632ad4d8a239954fd940277b25628ead95259a85c5eddb2120029"
+
+      created_contract_address = insert(:address)
+
+      insert(
+        :internal_transaction,
+        created_contract_address_hash: created_contract_address.hash,
+        created_contract_code: smart_contract_bytecode
+      )
+
+      assert Chain.smart_contract_bytecode(created_contract_address.hash) == smart_contract_bytecode
+    end
+  end
+
+  describe "create_smart_contract/1" do
+    test "with valid data creates a smart contract" do
+      smart_contract_bytecode =
+        "0x608060405234801561001057600080fd5b5060df8061001f6000396000f3006080604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604e5780636d4ce63c146078575b600080fd5b348015605957600080fd5b5060766004803603810190808035906020019092919050505060a0565b005b348015608357600080fd5b50608a60aa565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a7230582040d82a7379b1ee1632ad4d8a239954fd940277b25628ead95259a85c5eddb2120029"
+
+      created_contract_address = insert(:address, hash: "0x0f95fa9bc0383e699325f2658d04e8d96d87b90c")
+
+      insert(
+        :internal_transaction,
+        created_contract_address_hash: created_contract_address.hash,
+        created_contract_code: smart_contract_bytecode
+      )
+
+      valid_attrs = %{
+        address_hash: "0x0f95fa9bc0383e699325f2658d04e8d96d87b90c",
+        name: "SimpleStorage",
+        compiler_version: "0.4.23",
+        optimization: false,
+        contract_code:
+          "pragma solidity ^0.4.23; contract SimpleStorage {uint storedData; function set(uint x) public {storedData = x; } function get() public constant returns (uint) {return storedData; } }",
+        abi: [
+          %{
+            "constant" => false,
+            "inputs" => [%{"name" => "x", "type" => "uint256"}],
+            "name" => "set",
+            "outputs" => [],
+            "payable" => false,
+            "stateMutability" => "nonpayable",
+            "type" => "function"
+          },
+          %{
+            "constant" => true,
+            "inputs" => [],
+            "name" => "get",
+            "outputs" => [%{"name" => "", "type" => "uint256"}],
+            "payable" => false,
+            "stateMutability" => "view",
+            "type" => "function"
+          }
+        ]
+      }
+
+      assert {:ok, %SmartContract{} = smart_contract} = Chain.create_smart_contract(valid_attrs)
+      assert smart_contract.name == "SimpleStorage"
+      assert smart_contract.compiler_version == "0.4.23"
+      assert smart_contract.optimization == false
+      assert smart_contract.contract_code != ""
+      assert smart_contract.abi != ""
     end
   end
 end

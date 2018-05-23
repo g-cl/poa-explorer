@@ -8,7 +8,7 @@ defmodule Explorer.SmartContract.Solidity.CompilerVersion do
   @doc """
   Fetches list of compilers from Ethereum Solidity API.
   """
-  def fetch_versions() do
+  def fetch_versions do
     headers = [{"Content-Type", "application/json"}]
 
     case HTTPoison.get(source_url(), headers) do
@@ -25,10 +25,12 @@ defmodule Explorer.SmartContract.Solidity.CompilerVersion do
 
   defp format_data(json) do
     {:ok, releases} =
-      Jason.decode!(json)
+      json
+      |> Jason.decode!()
       |> Map.fetch("releases")
 
-    Map.to_list(releases)
+    releases
+    |> Map.to_list()
     |> Enum.map(fn {key, _value} -> {key, key} end)
     |> Enum.sort()
     |> Enum.reverse()

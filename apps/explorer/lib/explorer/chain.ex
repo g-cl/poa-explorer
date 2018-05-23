@@ -6,7 +6,7 @@ defmodule Explorer.Chain do
   import Ecto.Query, only: [from: 2, join: 4, or_where: 3, order_by: 2, order_by: 3, preload: 2, where: 2, where: 3]
 
   alias Ecto.{Changeset, Multi}
-  alias Explorer.Chain.{Address, Block, Hash, InternalTransaction, Log, Receipt, Transaction, Wei}
+  alias Explorer.Chain.{Address, Block, Hash, InternalTransaction, Log, Receipt, Transaction, Wei, SmartContract}
   alias Explorer.Repo
 
   @typedoc """
@@ -1372,6 +1372,23 @@ defmodule Explorer.Chain do
   @spec value(Transaction.t(), :ether) :: Wei.ether()
   def value(%type{value: value}, unit) when type in [InternalTransaction, Transaction] do
     Wei.to(value, unit)
+  end
+
+  def smart_contract_bytecode(address_hash) do
+    query =
+      from(
+        t in Explorer.Chain.InternalTransaction,
+        where: t.created_contract_address_hash == ^address_hash,
+        select: t.created_contract_code
+      )
+
+    Explorer.Repo.one(query)
+  end
+
+  def create_smart_contract(attrs \\ %{}) do
+    %SmartContract{}
+    |> SmartContract.changeset(attrs)
+    |> Repo.insert()
   end
 
   defp address_hash_to_transactions(

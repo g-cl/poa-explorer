@@ -16,27 +16,33 @@
 
         <div class="form-group">
           <label>Contract Address</label>
-          <%= text_input f, :address, class: "form-control" %>
+          <%= label f, :address_hash, "Contract Address" %>
+          <%= text_input f, :address_hash, class: "form-control", disabled: true %>
+          <%= error_tag f, :address_hash %>
         </div>
 
         <div class="form-group">
-          <label>Contract Name:</label>
+          <%= label f, :name, "Contract Name" %>
           <%= text_input f, :name, class: "form-control" %>
+          <%= error_tag f, :name %>
         </div>
 
         <div class="form-group">
-          <label>Compiler:</label>
+          <%= label f, :compiler, "Compiler" %>
           <%= select f, :compiler, @compiler_versions, class: "form-control" %>
+          <%= error_tag f, :compiler %>
         </div>
 
         <div class="form-group">
-          <label>Optimization:</label>
-          <%= select f, :optimization, ["yes", "no"], class: "form-control" %>
+          <%= label f, :optimization, "Optimization" %>
+          <%= select f, :optimization, ["No": false, "Yes": true], class: "form-control" %>
+          <%= error_tag f, :optimization %>
         </div>
 
         <div class="form-group">
-          <label>Enter the Solidity Contract Code below</label>
+          <%= label f, :code, "Enter the Solidity Contract Code below" %>
           <%= textarea f, :code, class: "form-control", rows: 3 %>
+          <%= error_tag f, :code %>
         </div>
 
         <%= submit "Verify and publish", class: "button--primary" %>
