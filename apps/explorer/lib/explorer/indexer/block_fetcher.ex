@@ -10,7 +10,7 @@ defmodule Explorer.Indexer.BlockFetcher do
   alias EthereumJSONRPC
   alias EthereumJSONRPC.Transactions
   alias Explorer.{Chain, Indexer}
-  alias Explorer.Indexer.{AddressBalanceFetcher, Sequence}
+  alias Explorer.Indexer.{AddressBalanceFetcher, Sequence, BlockFetcher.Address}
 
   # dialyzer thinks that Logger.debug functions always have no_local_return
   @dialyzer {:nowarn_function, import_range: 3}
@@ -266,7 +266,7 @@ defmodule Explorer.Indexer.BlockFetcher do
          {:internal_transactions, {:ok, internal_transactions}} <-
            {:internal_transactions, fetch_internal_transactions(state, transaction_hashes)} do
       addresses =
-        Indexer.BlockFetcher.Address.extract_addresses(%{
+        Address.extract_addresses(%{
           blocks: blocks,
           internal_transactions: internal_transactions,
           logs: logs,
