@@ -179,8 +179,7 @@ defmodule Explorer.Chain do
       :ok
 
   """
-  @spec update_balances(%{(address_hash :: String.t()) => balance :: integer}, [timeout_option]) ::
-          :ok
+  @spec update_balances(%{(address_hash :: String.t()) => balance :: integer}, [timeout_option]) :: :ok
   def update_balances(balances, options \\ []) when is_list(options) do
     timestamps = timestamps()
 
@@ -240,10 +239,9 @@ defmodule Explorer.Chain do
     * `:pagination` - pagination params to pass to scrivener.
   """
   @spec block_to_transactions(Block.t()) :: %Scrivener.Page{entries: [Transaction.t()]}
-  @spec block_to_transactions(Block.t(), [necessity_by_association_option | pagination_option]) ::
-          %Scrivener.Page{
-            entries: [Transaction.t()]
-          }
+  @spec block_to_transactions(Block.t(), [necessity_by_association_option | pagination_option]) :: %Scrivener.Page{
+          entries: [Transaction.t()]
+        }
   def block_to_transactions(%Block{hash: block_hash}, options \\ []) when is_list(options) do
     necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
     pagination = Keyword.get(options, :pagination, %{})
@@ -792,24 +790,16 @@ defmodule Explorer.Chain do
 
   ## Options
 
-    * `:timeout` - the timeout for the whole `c:Ecto.Repo.transaction/0` call.  Defaults to `#{
-    @transaction_timeout
-  }`
+    * `:timeout` - the timeout for the whole `c:Ecto.Repo.transaction/0` call.  Defaults to `#{@transaction_timeout}`
       milliseconds.
     * `:insert_addresses_timeout` - the timeout for inserting all addresses found in the params lists across all types.
       Defaults to `#{@insert_addresses_timeout}` milliseconds.
-    * `:insert_blocks_timeout` - the timeout for inserting all blocks. Defaults to `#{
-    @insert_blocks_timeout
-  }`
+    * `:insert_blocks_timeout` - the timeout for inserting all blocks. Defaults to `#{@insert_blocks_timeout}`
       milliseconds.
     * `:insert_internal_transactions_timeout` - the timeout for inserting all internal transactions. Defaults to
       `#{@insert_internal_transactions_timeout}` milliseconds.
-    * `:insert_logs_timeout` - the timeout for inserting all logs. Defaults to `#{
-    @insert_logs_timeout
-  }` milliseconds.
-    * `:insert_receipts_timeout` - the timeout for inserting all receipts. Defaults to `#{
-    @insert_receipts_timeout
-  }`
+    * `:insert_logs_timeout` - the timeout for inserting all logs. Defaults to `#{@insert_logs_timeout}` milliseconds.
+    * `:insert_receipts_timeout` - the timeout for inserting all receipts. Defaults to `#{@insert_receipts_timeout}`
       milliseconds.
     * `:insert_transactions_timeout` - the timeout for inserting all transactions found in the params lists across all
       types. Defaults to `#{@insert_transactions_timeout}` milliseconds.
@@ -825,9 +815,9 @@ defmodule Explorer.Chain do
         },
         options \\ []
       )
-      when is_list(blocks_params) and is_list(internal_transactions_params) and
-             is_list(logs_params) and is_list(receipts_params) and is_list(transactions_params) and
-             is_list(addresses_params) and is_list(options) do
+      when is_list(blocks_params) and is_list(internal_transactions_params) and is_list(logs_params) and
+             is_list(receipts_params) and is_list(transactions_params) and is_list(addresses_params) and
+             is_list(options) do
     with {:ok, ecto_schema_module_to_changes_list} <-
            ecto_schema_module_to_params_list_to_ecto_schema_module_to_changes_list(%{
              Block => blocks_params,
@@ -1230,10 +1220,9 @@ defmodule Explorer.Chain do
     * `:pagination` - pagination params to pass to scrivener.
 
   """
-  @spec recent_pending_transactions([inserted_after_option | necessity_by_association_option]) ::
-          %Scrivener.Page{
-            entries: [Transaction.t()]
-          }
+  @spec recent_pending_transactions([inserted_after_option | necessity_by_association_option]) :: %Scrivener.Page{
+          entries: [Transaction.t()]
+        }
   def recent_pending_transactions(options \\ []) when is_list(options) do
     necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
     pagination = Keyword.get(options, :pagination, %{})
@@ -1496,8 +1485,7 @@ defmodule Explorer.Chain do
     end
   end
 
-  @spec changes_list(params :: map, [{:for, module}]) ::
-          {:ok, changes :: map} | {:error, [Changeset.t()]}
+  @spec changes_list(params :: map, [{:for, module}]) :: {:ok, changes :: map} | {:error, [Changeset.t()]}
   defp changes_list(params, named_arguments) when is_list(named_arguments) do
     ecto_schema_module = Keyword.fetch!(named_arguments, :for)
     struct = ecto_schema_module.__struct__()
@@ -1522,9 +1510,7 @@ defmodule Explorer.Chain do
     {status, Enum.reverse(acc)}
   end
 
-  defp ecto_schema_module_to_params_list_to_ecto_schema_module_to_changes_list(
-         ecto_schema_module_to_params_list
-       ) do
+  defp ecto_schema_module_to_params_list_to_ecto_schema_module_to_changes_list(ecto_schema_module_to_params_list) do
     ecto_schema_module_to_params_list
     |> Stream.map(fn {ecto_schema_module, params} ->
       {ecto_schema_module, changes_list(params, for: ecto_schema_module)}
@@ -1578,8 +1564,7 @@ defmodule Explorer.Chain do
     Enum.sort_by(changes_list, & &1.hash)
   end
 
-  @spec insert_blocks([map()], [timeout_option | timestamps_option]) ::
-          {:ok, [Hash.t()]} | {:error, [Changeset.t()]}
+  @spec insert_blocks([map()], [timeout_option | timestamps_option]) :: {:ok, [Hash.t()]} | {:error, [Changeset.t()]}
   defp insert_blocks(changes_list, named_arguments)
        when is_list(changes_list) and is_list(named_arguments) do
     timestamps = Keyword.fetch!(named_arguments, :timestamps)
@@ -1715,8 +1700,7 @@ defmodule Explorer.Chain do
     {:ok, for(log <- logs, do: Map.take(log, [:index, :transaction_hash]))}
   end
 
-  @spec insert_receipts([map()], [timeout_option | timestamps_option]) ::
-          {:ok, [Hash.t()]} | {:error, [Changeset.t()]}
+  @spec insert_receipts([map()], [timeout_option | timestamps_option]) :: {:ok, [Hash.t()]} | {:error, [Changeset.t()]}
   defp insert_receipts(changes_list, named_arguments)
        when is_list(changes_list) and is_list(named_arguments) do
     timestamps = Keyword.fetch!(named_arguments, :timestamps)
@@ -1742,8 +1726,7 @@ defmodule Explorer.Chain do
   defp insert_changes_list(changes_list, options) when is_list(changes_list) do
     ecto_schema_module = Keyword.fetch!(options, :for)
 
-    timestamped_changes_list =
-      timestamp_changes_list(changes_list, Keyword.fetch!(options, :timestamps))
+    timestamped_changes_list = timestamp_changes_list(changes_list, Keyword.fetch!(options, :timestamps))
 
     {_, inserted} =
       Repo.safe_insert_all(
